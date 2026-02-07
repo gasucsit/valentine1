@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<!-- iPhone fullscreen setup -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<title>Netflix Valentine</title>
+
+<style>
+    :root {
+        --safe-top: env(safe-area-inset-top);
+        --safe-bottom: env(safe-area-inset-bottom);
+    }
+
+    body {
+        margin: 0;
+        height: 100vh;
+        background: radial-gradient(circle at top, #181818, #000);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        color: white;
+        overflow: hidden;
+        padding-top: var(--safe-top);
+        padding-bottom: var(--safe-bottom);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Floating hearts */
+    .heart {
+        position: absolute;
+        bottom: -20px;
+        color: #e50914;
+        font-size: 18px;
+        animation: floatUp linear infinite;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 0; }
+        10% { opacity: 0.7; }
+        100% { transform: translateY(-110vh) scale(1.6); opacity: 0; }
+    }
+
+    .card {
+        background: linear-gradient(180deg, #141414, #000);
+        padding: 45px 30px 40px;
+        border-radius: 16px;
+        width: min(90vw, 380px);
+        text-align: center;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+        position: relative;
+        z-index: 2;
+    }
+
+    .logo {
+        color: #e50914;
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        margin-bottom: 18px;
+    }
+
+    h1 {
+        font-size: 22px;
+        line-height: 1.4;
+        margin-bottom: 16px;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        color: #aaa;
+        margin-bottom: 30px;
+    }
+
+    .buttons {
+        position: relative;
+        height: 120px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    button {
+        font-size: 18px;
+        padding: 16px 34px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        min-width: 140px;
+        touch-action: manipulation;
+    }
+
+    #yes {
+        background: #e50914;
+        color: white;
+        z-index: 2;
+    }
+
+    #no {
+        background: #333;
+        color: #bbb;
+        position: absolute;
+        top: 0;
+        will-change: transform, left, top;
+    }
+
+    /* INSANE shake */
+    @keyframes insaneShake {
+        0%   { transform: translate(0,0) rotate(0deg); }
+        20%  { transform: translate(-8px, 6px) rotate(-5deg); }
+        40%  { transform: translate(8px, -6px) rotate(5deg); }
+        60%  { transform: translate(-10px, -8px) rotate(-6deg); }
+        80%  { transform: translate(10px, 8px) rotate(6deg); }
+        100% { transform: translate(0,0) rotate(0deg); }
+    }
+
+    .panic {
+        animation: insaneShake 0.12s infinite;
+    }
+
+</style>
+</head>
+
+<body>
+
+<!-- Netflix ta-dum -->
+<audio id="tadum" src="tadum.mp3" preload="auto"></audio>
+
+<div class="card">
+    <div class="logo">NETFLIX</div>
+
+    <h1 id="question"></h1>
+
+    <div class="subtitle">A Netflix Original Valentine 💘</div>
+
+    <div class="buttons">
+        <button id="no">No</button>
+        <button id="yes">Yes</button>
+    </div>
+</div>
+
+<script>
+    const herName = "Pukuliii"; // 👈 change name here
+    const question = document.getElementById("question");
+    const noButton = document.getElementById("no");
+    const yesButton = document.getElementById("yes");
+    const buttonsBox = document.querySelector(".buttons");
+    const tadum = document.getElementById("tadum");
+
+    question.textContent = ` ${herName}, will you be my Valentine? ❤️`;
+
+    let scale = 1;
+
+    function chaosMove() {
+        // shrink every time
+        scale *= 0.85;
+        if (scale < 0.35) scale = 0.35; // don't vanish completely
+
+        noButton.style.transform = `scale(${scale})`;
+
+        // panic shake
+        noButton.classList.add("panic");
+
+        // instant teleport
+        const maxX = buttonsBox.clientWidth - noButton.offsetWidth * scale;
+        const maxY = buttonsBox.clientHeight - noButton.offsetHeight * scale;
+
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+
+        noButton.style.left = x + "px";
+        noButton.style.top = y + "px";
+
+        // remove shake shortly (so it re-triggers constantly)
+        setTimeout(() => {
+            noButton.classList.remove("panic");
+        }, 150);
+    }
+
+    // mouse + touch = impossible
+    noButton.addEventListener("mouseover", chaosMove);
+    noButton.addEventListener("mouseenter", chaosMove);
+    noButton.addEventListener("touchstart", chaosMove);
+
+    // Floating hearts
+    function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = (4 + Math.random() * 4) + "s";
+        document.body.appendChild(heart);
+
+        setTimeout(() => heart.remove(), 8000);
+    }
+
+    setInterval(createHeart, 450);
+
+    // YES click
+    yesButton.addEventListener("click", () => {
+        tadum.play();
+
+        document.body.innerHTML = `
+            <div style="
+                height:100vh;
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
+                align-items:center;
+                background:black;
+                font-family:'Helvetica Neue',Arial,sans-serif;
+                color:white;
+                text-align:center;
+                padding: env(safe-area-inset-top) env(safe-area-inset-bottom);
+            ">
+                <div style="
+                    color:#e50914;
+                    font-size:40px;
+                    font-weight:900;
+                    letter-spacing:3px;
+                    margin-bottom:20px;
+                ">NETFLIX</div>
+
+                <h1 style="font-size:26px;">Thaha thiyo timley YES vhanxeu vhanera 😏❤️</h1>
+                <p style="color:#aaa; margin-top:12px;">
+                    Starring: You & Me<br>
+                    Genre: Romance 🔥
+                </p>
+            </div>
+        `;
+    });
+</script>
+
+</body>
+</html>
